@@ -1,72 +1,134 @@
+# 1Panel Docker 镜像
+
 [![Docker Image Version (latest semver)](https://img.shields.io/docker/v/moelin/1panel/latest?color=%2348BB78&logo=docker&label=version)](https://hub.docker.com/r/moelin/1panel)
 [![Docker Pulls](https://img.shields.io/docker/pulls/moelin/1panel?color=%2348BB78&logo=docker&label=pulls)](https://hub.docker.com/r/moelin/1panel)
 [![Docker Stars](https://img.shields.io/docker/stars/moelin/1panel?color=%2348BB78&logo=docker&label=stars)](https://hub.docker.com/r/moelin/1panel)
-[![GitHub Repo stars](https://img.shields.io/github/stars/okxlin/docker-1panel)](https://star-history.com/#okxlin/docker-1panel&Date)
+[![GitHub Repo stars](https://img.shields.io/github/stars/okxlin/docker-1panel)](https://github.com/okxlin/docker-1panel)
+
+> [!CAUTION]
+> **重要提示**: 1Panel V2 版本与 V1 版本**无法直接跨版本升级**！
+> 
+> 如需从 V1 迁移到 V2，请参考官方迁移文档: https://1panel.cn/docs/v2/installation/v1_migrate/
+> 
+> **Docker 用户迁移**: 如果您以 Docker 方式运行 V1，可通过迁移脚本先切换到宿主机运行模式，再使用官方升级工具升级到 V2，最后可切换回 Docker 运行模式。详见 [Q2: 如何从 V1 迁移到 V2?](#q2-如何从-v1-迁移到-v2)
+>
+> 脚本下载链接:
+> [GitHub](https://raw.githubusercontent.com/okxlin/ToolScript/refs/heads/main/1Panel/1panel-execution-mode/1panel_docker_to_sys.sh) |
+> [cdn.jsdelivr.net](https://cdn.jsdelivr.net/gh/okxlin/ToolScript@main/1Panel/1panel-execution-mode/1panel_docker_to_sys.sh) |
+> [testingcf.jsdelivr.net](https://testingcf.jsdelivr.net/gh/okxlin/ToolScript@main/1Panel/1panel-execution-mode/1panel_docker_to_sys.sh) |
+> [quantil.jsdelivr.net](https://quantil.jsdelivr.net/gh/okxlin/ToolScript@main/1Panel/1panel-execution-mode/1panel_docker_to_sys.sh) |
+> [fastly.jsdelivr.net](https://fastly.jsdelivr.net/gh/okxlin/ToolScript@main/1Panel/1panel-execution-mode/1panel_docker_to_sys.sh) |
+> [purge.jsdelivr.net](https://purge.jsdelivr.net/gh/okxlin/ToolScript@main/1Panel/1panel-execution-mode/1panel_docker_to_sys.sh) |
+> [gcore.jsdelivr.net](https://gcore.jsdelivr.net/gh/okxlin/ToolScript@main/1Panel/1panel-execution-mode/1panel_docker_to_sys.sh) |
+> [originfastly.jsdelivr.net](https://originfastly.jsdelivr.net/gh/okxlin/ToolScript@main/1Panel/1panel-execution-mode/1panel_docker_to_sys.sh)
+
+## 📑 目录
 
 - [简介](#简介)
-- [1. 注意事项](#1-注意事项)
-- [2. docker方式安装](#2-docker方式安装)
-- [3. docker-compose方式安装](#3-docker-compose方式安装)
-- [4. 修改面板显示版本](#4-修改面板显示版本)
-  - [4.1 安装`SQLite3`](#41-安装sqlite3)
-  - [4.2 修改面板显示版本](#42-修改面板显示版本)
-- [5. 镜像编译](#5-镜像编译)
+- [版本说明](#版本说明)
+- [镜像标签](#镜像标签)
+- [V1 版本使用](#v1-版本使用)
+  - [注意事项](#v1-注意事项)
+  - [Docker 安装](#v1-docker-安装)
+  - [Docker Compose 安装](#v1-docker-compose-安装)
+  - [环境变量配置](#v1-环境变量配置)
+  - [修改面板显示版本](#修改面板显示版本)
+- [V2 版本使用](#v2-版本使用)
+  - [注意事项](#v2-注意事项)
+  - [Docker 安装](#v2-docker-安装)
+  - [Docker Compose 安装](#v2-docker-compose-安装)
+  - [环境变量配置](#环境变量配置)
+- [镜像编译](#镜像编译)
+- [常见问题](#常见问题)
+- [相关链接](#相关链接)
+- [声明](#声明)
 
-***
+---
 
 ## 简介
 
-偶然看到[**1panel-dood**](https://github.com/tangger2000/1panel-dood)的关于`docker`部署`1panel`的方法，确实好想法，点赞。
+本项目提供 1Panel 的 Docker 容器化部署方案，支持 V1 和 V2 两个主要版本。
 
-受到启发编写了一下相关文件，把`1panel`套娃一下。
+**项目特点**:
+- ✅ 支持多架构平台 (amd64, arm64, armv7, ppc64le, s390x)
+- ✅ 自动化构建和版本更新
+- ✅ 提供中国版 (CN) 和国际版 (Global) 镜像
+- ✅ V1/V2 版本均支持环境变量配置 (V1 需 v1.10.34-lts+)
+- ✅ 云原生架构: Supervisor 进程管理 + 动态配置
 
-与[**1panel-dood**](https://github.com/tangger2000/1panel-dood)有所不同的是，我是以替换二进制文件的形式来的，
+**致谢**: 本项目受 [1panel-dood](https://github.com/tangger2000/1panel-dood) 启发，采用替换二进制文件的方式实现容器化部署。
 
-因为如果使用原始安装脚本作为启动命令，当更换容器时，需要事先备份数据库文件，否则会出现数据库覆盖问题。
+---
 
-单主程序的好处了，正好是和之前适配[1Panel 应用商店的非官方应用适配库](https://github.com/okxlin/appstore)写的`GO`语言的应用的`Dockerfile`异曲同工。
+## 版本说明
 
-## 1. 注意事项
+| 版本 | 下载源 | 状态 | 推荐使用 |
+|------|--------|------|----------|
+| **V1** | 国内/国际 | 维护中 | 稳定用户 |
+| **V2** | 国内 | 最新版 | 新用户 |
 
-- 由于容器内部`systemd`限制，部分功能目前尚不完整。
+> [!WARNING]
+> V1 和 V2 **无法直接跨版本升级**，迁移请参考: https://1panel.cn/docs/v2/installation/v1_migrate/
 
-- **<span style="color: #ff0000">不要</span>点击容器化部署的 `1Panel` 右下角进行更新，应该拉取新镜像，再重新部署来应用更新。**
+---
 
-- **20230919：添加自动修改面板显示应用版本，<span style="color: #ff0000">无需</span>手动修改数据库。**
+## 镜像标签
 
-~~如果更新了更高版本的镜像，实际是更新了对应版本的二进制程序，面板显示的相关版本还需要手动更新。~~
-
-
-相关操作查看下文。
-***
-- 默认端口：`10086`
-- 默认账户：`1panel`
-- 默认密码：`1panel_password`
-- 默认入口：`entrance`
-***
-- 不可调整参数
-  - `/var/run/docker.sock`的相关映射
- ***
-- 可调整参数
-> **推荐使用/opt路径，否则有些调用本地文件的应用可能出现异常**
-  - `/opt:/opt`                        文件存储映射
-  - `TZ=Asia/Shanghai`                        时区设置
-  - `1panel`                          容器名
-  - `/var/lib/docker/volumes:/var/lib/docker/volumes` 存储卷映射
-***
-**架构平台对应镜像**
-- amd64
-- arm64
-- armv7
-- ppc64le
-- s390x
-> 2023年9月3日已经更新单标签多镜像
-```
-docker pull moelin/1panel:latest
+### V1 中国版 (CN)
+```bash
+moelin/1panel:v1.10.22    # 具体版本
+moelin/1panel:v1          # 浮动标签 (最新 V1)
 ```
 
-## 2. docker方式安装
+### V1 国际版 (Global)
+```bash
+moelin/1panel:global-v1.10.22    # 具体版本
+moelin/1panel:global-v1          # 浮动标签 (最新 V1 Global)
 ```
+
+### V2 中国版 (CN)
+```bash
+moelin/1panel:v2.0.6      # 具体版本
+moelin/1panel:v2          # 浮动标签 (最新 V2)
+moelin/1panel:latest      # 全局最新 (指向 V2)
+```
+
+> [!TIP]
+> **标签选择建议**
+> - 生产环境: 使用具体版本号 (如 `v1.10.22`)
+> - 测试环境: 使用浮动标签 (如 `v1`, `v2`)
+> - 追求最新: 使用 `latest` (目前指向 V2)
+
+---
+
+## V1 版本使用
+
+### V1 注意事项
+
+> [!IMPORTANT]
+> **使用限制**
+> - **禁止**点击面板右下角更新按钮
+> - 应通过拉取新镜像并重新部署来更新
+
+> [!NOTE]
+> **云原生架构升级** (v1.10.34-lts+)
+> - ✅ 支持环境变量动态配置 (端口、用户名、密码、入口)
+> - ✅ Supervisor 进程管理，自动重启和日志管理
+> - ✅ 首次启动自动配置，支持随机密码生成
+> - ⚠️ **仅 v1.10.34-lts 及以后版本支持**环境变量配置功能
+
+**默认配置**:
+- 端口: `10086`
+- 账户: `1panel`
+- 密码: `1panel_password` (首次启动可自动生成随机密码)
+- 入口: `entrance`
+
+**支持架构**: amd64, arm64, armv7, ppc64le, s390x
+
+### V1 Docker 安装
+
+#### 中国版 (CN) - 基础安装
+```bash
 docker run -d \
     --name 1panel \
     --restart always \
@@ -76,97 +138,379 @@ docker run -d \
     -v /opt:/opt \
     -v /root:/root \
     -e TZ=Asia/Shanghai \
-    moelin/1panel:latest
+    moelin/1panel:v1
 ```
 
-## 3. docker-compose方式安装
-
-创建一个`docker-compose.yml`文件，内容类似如下
+#### 中国版 (CN) - 自定义配置 (v1.10.34-lts+)
+```bash
+docker run -d \
+    --name 1panel \
+    --restart always \
+    --network host \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v /var/lib/docker/volumes:/var/lib/docker/volumes \
+    -v /opt:/opt \
+    -v /root:/root \
+    -e TZ=Asia/Shanghai \
+    -e PORT=10086 \
+    -e USERNAME=admin \
+    -e PASSWORD=your_secure_password \
+    -e ENTRANCE=myentrance \
+    moelin/1panel:v1
 ```
+
+#### 国际版 (Global) - 基础安装
+```bash
+docker run -d \
+    --name 1panel-global \
+    --restart always \
+    --network host \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v /var/lib/docker/volumes:/var/lib/docker/volumes \
+    -v /opt:/opt \
+    -v /root:/root \
+    -e TZ=Asia/Shanghai \
+    moelin/1panel:global-v1
+```
+
+#### 国际版 (Global) - 自定义配置 (v1.10.34-lts+)
+```bash
+docker run -d \
+    --name 1panel-global \
+    --restart always \
+    --network host \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v /var/lib/docker/volumes:/var/lib/docker/volumes \
+    -v /opt:/opt \
+    -v /root:/root \
+    -e TZ=Asia/Shanghai \
+    -e PORT=10086 \
+    -e USERNAME=admin \
+    -e PASSWORD=your_secure_password \
+    -e ENTRANCE=myentrance \
+    moelin/1panel:global-v1
+```
+
+### V1 Docker Compose 安装
+
+#### 基础配置
+
+创建 `docker-compose.yml`:
+
+```yaml
 version: '3'
 services:
   1panel:
-    container_name: 1panel # 容器名
+    container_name: 1panel
     restart: always
     network_mode: "host"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /var/lib/docker/volumes:/var/lib/docker/volumes
-      - /opt:/opt  # 文件存储映射
-      - /root:/root  # 可选的文件存储映射
+      - /opt:/opt
+      - /root:/root
     environment:
-      - TZ=Asia/Shanghai  # 时区设置
-    image: moelin/1panel:latest
-    labels:  
+      - TZ=Asia/Shanghai
+    image: moelin/1panel:v1
+    labels:
       createdBy: "Apps"
 ```
 
-然后`docker-compose up -d`运行
+#### 自定义配置 (v1.10.34-lts+)
 
-## 4. 修改面板显示版本
-### 4.1 安装`SQLite3`
-
-以`Debian`系统为例，其他系统对应更改包管理器命令。
-- Debian/Ubuntu: apt-get
-- RedHat/CentOS: yum
-
+```yaml
+version: '3'
+services:
+  1panel:
+    container_name: 1panel
+    restart: always
+    network_mode: "host"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/volumes:/var/lib/docker/volumes
+      - /opt:/opt
+      - /root:/root
+    environment:
+      - TZ=Asia/Shanghai
+      - PORT=10086
+      - USERNAME=admin
+      - PASSWORD=your_secure_password
+      - ENTRANCE=myentrance
+      - BASE_DIR=/opt
+    image: moelin/1panel:v1
+    labels:
+      createdBy: "Apps"
 ```
-# 更新软件包列表
-apt-get update
 
-# 安装 SQLite3，并自动回答所有提示为“是”
-apt-get install sqlite3 -y
-```
-### 4.2 修改面板显示版本
-- 获取文件存储实际路径
-
-在宿主机上的实际路径，假设如下
-```
-/opt
+运行:
+```bash
+docker-compose up -d
 ```
 
-- 备份旧数据库
+### V1 环境变量配置
+
+> [!WARNING]
+> **版本要求**: 环境变量配置功能仅在 **v1.10.34-lts** 及以后版本生效
+
+| 变量名 | 默认值 | 说明 |
+|--------|--------|------|
+| `PORT` | `10086` | 面板访问端口 |
+| `USERNAME` | `1panel` | 管理员用户名 |
+| `PASSWORD` | `1panel_password` | 管理员密码 (首次启动自动生成随机密码) |
+| `ENTRANCE` | `entrance` | 安全入口路径 |
+| `BASE_DIR` | `/opt` | 数据存储目录 |
+| `TZ` | `Asia/Shanghai` | 时区设置 |
+| `RESET` | `false` | 设为 `true` 强制重置配置 |
+
+> [!TIP]
+> **密码安全提示**
+> - 如果不设置 `PASSWORD` 或使用默认值，首次启动会自动生成随机密码
+> - 随机密码会在容器日志中显示，请及时查看并保存
+> - 查看日志: `docker logs 1panel`
+
+### 修改面板显示版本
+
+> [!NOTE]
+> 自 2023-09-19 起，镜像已支持自动修改面板显示版本，**无需手动操作**
+
+如需手动修改:
+
+#### 1. 安装 SQLite3
+
+```bash
+# Debian/Ubuntu
+apt-get update && apt-get install sqlite3 -y
+
+# RedHat/CentOS
+yum install sqlite -y
 ```
-# 将原始数据库文件备份为 .bak 文件
+
+#### 2. 修改版本信息
+
+```bash
+# 备份数据库
 cp /opt/1panel/db/1Panel.db /opt/1panel/db/1Panel.db.bak
-```
 
-- 打开数据库文件
-```
-# 打开 SQLite3 数据库
+# 打开数据库
 sqlite3 /opt/1panel/db/1Panel.db
-```
 
-- 修改版本信息，按需修改`v1.5.2`
-```
-UPDATE settings
-SET value = 'v1.5.2'
-WHERE key = 'SystemVersion';
-```
+# 修改版本 (替换 v1.10.22 为实际版本)
+UPDATE settings SET value = 'v1.10.22' WHERE key = 'SystemVersion';
 
-- 退出修改
-```
+# 退出
 .exit
-```
-- 重启面板应用更改
-```
-# 重新启动 1panel 容器
+
+# 重启容器
 docker restart 1panel
 ```
 
-## 5. 镜像编译
+---
 
-```
-docker build --build-arg PANELVER=your_desired_version -t your_image_name:tag .
+## V2 版本使用
 
-```
-- 例子1：
-```
-docker build --build-arg PANELVER=v1.4.3 -t 1panel:v1.4.3 .
+### V2 注意事项
 
+- ✅ 支持通过环境变量配置端口、用户名、密码、入口
+- ✅ 支持数据目录映射 (`BASE_DIR`)
+- ✅ 首次启动自动配置，无需手动初始化
+- ⚠️ **无法从 V1 直接升级**，迁移请参考官方文档
+
+### V2 Docker 安装
+
+```bash
+docker run -d \
+    --name 1panel-v2 \
+    --restart always \
+    --network host \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v /opt:/opt \
+    -e TZ=Asia/Shanghai \
+    -e PORT=10086 \
+    -e USERNAME=admin \
+    -e PASSWORD=your_secure_password \
+    -e ENTRANCE=myentrance \
+    moelin/1panel:v2
 ```
-- 例子2：
+
+### V2 Docker Compose 安装
+
+创建 `docker-compose.yml`:
+
+```yaml
+version: '3'
+services:
+  1panel-v2:
+    container_name: 1panel-v2
+    restart: always
+    network_mode: "host"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /opt:/opt
+    environment:
+      - TZ=Asia/Shanghai
+      - PORT=10086
+      - USERNAME=admin
+      - PASSWORD=your_secure_password
+      - ENTRANCE=myentrance
+      - BASE_DIR=/opt
+    image: moelin/1panel:v2
+    labels:
+      createdBy: "Apps"
 ```
-docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le,linux/s390x \
---build-arg PANELVER=v1.4.3 -t moelin/1panel:v1.4.3 --push .
+
+运行:
+```bash
+docker-compose up -d
 ```
+
+### 环境变量配置
+
+| 变量名 | 默认值 | 说明 |
+|--------|--------|------|
+| `PORT` | `10086` | 面板访问端口 |
+| `USERNAME` | `1panel` | 管理员用户名 |
+| `PASSWORD` | `1panel_password` | 管理员密码 (首次启动自动生成随机密码) |
+| `ENTRANCE` | `entrance` | 安全入口路径 |
+| `BASE_DIR` | `/opt` | 数据存储目录 |
+| `TZ` | `Asia/Shanghai` | 时区设置 |
+| `RESET` | `false` | 设为 `true` 强制重置配置 |
+
+> [!TIP]
+> **密码安全提示**
+> - 如果不设置 `PASSWORD` 或使用默认值，首次启动会自动生成随机密码
+> - 随机密码会在容器日志中显示，请及时查看并保存
+> - 查看日志: `docker logs 1panel-v2`
+
+---
+
+## 镜像编译
+
+### V1 编译
+
+```bash
+# 单架构编译
+docker build --build-arg PANELVER=v1.10.22 -t 1panel:v1.10.22 ./V1
+
+# 多架构编译并推送
+docker buildx build \
+  --platform linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le,linux/s390x \
+  --build-arg PANELVER=v1.10.22 \
+  -t <your-dockerhub-username>/1panel:v1.10.22 \
+  --push \
+  ./V1
+```
+
+### V1 Global 编译
+
+```bash
+docker buildx build \
+  --platform linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le,linux/s390x \
+  --build-arg PANELVER=v1.10.22 \
+  -t <your-dockerhub-username>/1panel:global-v1.10.22 \
+  -f ./V1/Dockerfile-Global \
+  --push \
+  ./V1
+```
+
+### V2 编译
+
+```bash
+docker buildx build \
+  --platform linux/amd64,linux/arm64,linux/arm/v7,linux/ppc64le,linux/s390x \
+  --build-arg PANELVER=v2.0.6 \
+  -t <your-dockerhub-username>/1panel:v2.0.6 \
+  --push \
+  ./V2
+```
+
+---
+
+## 常见问题
+
+### Q1: V1 和 V2 如何选择?
+
+**V1 适合**:
+- 已有 V1 部署且运行稳定
+- 不需要最新功能
+- 追求稳定性
+
+**V2 适合**:
+- 新用户首次部署
+- 需要最新功能和性能优化
+- 愿意接受新架构
+
+### Q2: 如何从 V1 迁移到 V2?
+
+> [!CAUTION]
+> **无法直接升级！**
+
+请参考官方迁移文档: https://1panel.cn/docs/v2/installation/v1_migrate/
+
+> [!TIP]
+> **Docker 运行模式迁移方案**
+>
+> 如果您当前以 Docker 方式运行 1Panel V1，可以通过以下步骤迁移到 V2:
+>
+> **步骤 1**: 使用迁移脚本将 1Panel 从 Docker 运行模式切换到宿主机运行模式
+> ```bash
+> # GitHub 源
+> wget -O 1panel_docker_to_sys.sh https://raw.githubusercontent.com/okxlin/ToolScript/refs/heads/main/1Panel/1panel-execution-mode/1panel_docker_to_sys.sh
+> # jsDelivr 源 (以下任选其一，国内加速)
+> wget -O 1panel_docker_to_sys.sh https://cdn.jsdelivr.net/gh/okxlin/ToolScript@main/1Panel/1panel-execution-mode/1panel_docker_to_sys.sh
+> wget -O 1panel_docker_to_sys.sh https://testingcf.jsdelivr.net/gh/okxlin/ToolScript@main/1Panel/1panel-execution-mode/1panel_docker_to_sys.sh
+> wget -O 1panel_docker_to_sys.sh https://quantil.jsdelivr.net/gh/okxlin/ToolScript@main/1Panel/1panel-execution-mode/1panel_docker_to_sys.sh
+> wget -O 1panel_docker_to_sys.sh https://fastly.jsdelivr.net/gh/okxlin/ToolScript@main/1Panel/1panel-execution-mode/1panel_docker_to_sys.sh
+> wget -O 1panel_docker_to_sys.sh https://purge.jsdelivr.net/gh/okxlin/ToolScript@main/1Panel/1panel-execution-mode/1panel_docker_to_sys.sh
+> wget -O 1panel_docker_to_sys.sh https://gcore.jsdelivr.net/gh/okxlin/ToolScript@main/1Panel/1panel-execution-mode/1panel_docker_to_sys.sh
+> wget -O 1panel_docker_to_sys.sh https://originfastly.jsdelivr.net/gh/okxlin/ToolScript@main/1Panel/1panel-execution-mode/1panel_docker_to_sys.sh
+> # 下载完成后，添加执行权限并运行
+> chmod +x 1panel_docker_to_sys.sh && bash 1panel_docker_to_sys.sh
+> ```
+>
+> **步骤 2**: 使用官方升级工具将 V1 升级到 V2
+> - 参考官方文档: https://1panel.cn/docs/v2/installation/v1_migrate/
+>
+> **步骤 3**: 升级完成后，如需切换回 Docker 运行模式，可重新使用迁移脚本切换回 Docker 运行模式
+
+### Q3: 容器内如何执行 1pctl 命令?
+
+```bash
+# 进入容器
+docker exec -it 1panel bash
+
+# V1 执行命令
+1pctl version
+
+# V2 执行命令
+1pctl version
+```
+
+### Q4: 如何查看容器日志?
+
+```bash
+# V1
+docker logs 1panel
+
+# V2
+docker logs 1panel-v2
+
+# 实时查看
+docker logs -f 1panel-v2
+```
+
+---
+
+## 相关链接
+
+- [1Panel 官网](https://1panel.cn)
+- [1Panel 文档](https://1panel.cn/docs)
+- [1Panel GitHub](https://github.com/1Panel-dev/1Panel)
+- [Docker Hub](https://hub.docker.com/r/moelin/1panel)
+- [本项目 GitHub](https://github.com/okxlin/docker-1panel)
+- [应用商店适配库](https://github.com/okxlin/appstore)
+
+---
+
+## 声明
+
+本项目部分文档内容由 AI 辅助生成。
